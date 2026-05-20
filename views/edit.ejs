@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Редагування події – Актовий Зал</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    
+    <nav class="navbar">
+        <div class="logo"><strong>Актовий Зал</strong> <span class="badge" style="display:inline; margin-left:10px;">/ Режим редагування</span></div>
+        <ul class="nav-links">
+            <li><a href="/">Повернутися на головну</a></li>
+        </ul>
+    </nav>
+
+    <div class="container" style="padding-top: 60px;">
+        <section class="form-section">
+            <h2 class="section-title">✏️ Редагування події: <span class="text-orange"><%= event.title %></span></h2>
+            
+            <form action="/events/update/<%= event.id %>" method="POST">
+                <div class="form-grid">
+                    <div>
+                        <label>Назва події:</label>
+                        <input type="text" name="title" value="<%= event.title %>" required>
+                    </div>
+                    
+                    <div>
+                        <label>Дата та час:</label>
+                        <% 
+                           // Форматування дати для поля datetime-local
+                           const dateObj = new Date(event.date);
+                           dateObj.setMinutes(dateObj.getMinutes() - dateObj.getTimezoneOffset());
+                           const formattedDate = dateObj.toISOString().slice(0,16);
+                        %>
+                        <input type="datetime-local" name="date" value="<%= formattedDate %>" required>
+                    </div>
+                    
+                    <div>
+                        <label>Тривалість (хв):</label>
+                        <input type="number" name="duration" value="<%= event.duration %>" required>
+                    </div>
+                    
+                    <div>
+                        <label>Загальна кількість місць:</label>
+                        <input type="number" name="total_seats" value="<%= event.total_seats %>" required>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 15px;">
+                    <label>Опис:</label>
+                    <textarea name="description" rows="4"><%= event.description %></textarea>
+                </div>
+                
+                <div style="margin-top: 30px; display: flex; gap: 15px;">
+                    <button type="submit" class="btn-primary">Зберегти зміни</button>
+                    <a href="/" class="btn-secondary" style="text-align: center;">Скасувати</a>
+                </div>
+            </form>
+        </section>
+    </div>
+
+</body>
+</html>

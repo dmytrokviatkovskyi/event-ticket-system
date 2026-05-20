@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Актовий Зал – Квитки</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body class="client-mode"> <nav class="navbar">
+        <div class="logo"><strong>Актовий Зал</strong></div>
+        <ul class="nav-links">
+            <li><a href="#events-section">Події</a></li>
+            <li><a href="#about">Про нас</a></li>
+        </ul>
+        <button id="admin-toggle-btn" class="nav-btn">🔧 Увійти як адмін</button>
+    </nav>
+
+    <header class="hero">
+        <div class="hero-content">
+            <div class="badge"><span class="dot"></span> ОФІЦІЙНА ПЛАТФОРМА</div>
+            <h1>Квитки на<br><span class="text-orange">незабутні</span><br>події</h1>
+            <p>Бронюйте місця на концерти, лекції та вистави<br>в найкращому актовому залі міста.</p>
+            <div class="hero-buttons">
+                <a href="#events-section" class="btn-primary">Переглянути події</a>
+                <a href="#about" class="btn-secondary">Дізнатись більше</a>
+            </div>
+        </div>
+        
+        <div class="hero-visuals">
+            <div class="glass-card card-1">🎭 Театр</div>
+            <div class="glass-card card-2">🎵 Концерт</div>
+            <div class="glass-card card-3">🎤 Лекція</div>
+        </div>
+    </header>
+
+    <div class="container">
+        <% if (error) { %>
+            <div class="alert-error"><%= error %></div>
+        <% } %>
+
+        <section id="events-section" class="section">
+            <h2 class="section-title">Доступні заходи</h2>
+            <div class="events-grid">
+                <% if (events.length === 0) { %>
+                    <p class="muted-text">Наразі заходів немає. Очікуйте анонсів!</p>
+                <% } else { %>
+                    <% events.forEach(event => { %>
+                        <div class="event-card">
+                            <div class="event-header">
+                                <h3><%= event.title %></h3>
+                            </div>
+                            <div class="event-body">
+                                <p><strong>📅 Дата:</strong> <%= new Date(event.date).toLocaleString('uk-UA', { day: '2-digit', month: 'long', hour: '2-digit', minute:'2-digit' }) %></p>
+                                <p><strong>⏳ Тривалість:</strong> <%= event.duration %> хв</p>
+                                <p><strong>🪑 Вільних місць:</strong> <span class="text-orange"><%= event.free_seats %></span> з <%= event.total_seats %></p>
+                                <p class="desc"><%= event.description %></p>
+                            </div>
+
+                            <div class="actions admin-only">
+                                <a href="/events/edit/<%= event.id %>" class="btn-edit">Редагувати</a>
+                                <form action="/events/delete/<%= event.id %>" method="POST" style="display:inline;">
+                                    <button type="submit" class="btn-delete" onclick="return confirm('Ви впевнені?')">Видалити</button>
+                                </form>
+                            </div>
+
+                            <div class="buy-section client-only">
+                                <h4>Купити квиток</h4>
+                                <% if (event.free_seats > 0) { %>
+                                    <form action="/tickets/buy" method="POST" class="buy-form">
+                                        <input type="hidden" name="event_id" value="<%= event.id %>">
+                                        <input type="text" name="name" placeholder="Ваше ім'я" required>
+                                        <input type="email" name="email" placeholder="Email" required>
+                                        <input type="tel" name="phone" placeholder="Номер телефону" required>
+                                        <button type="submit" class="btn-primary w-100">Забронювати</button>
+                                    </form>
+                                <% } else { %>
+                                    <p class="sold-out">❌ Усі квитки продано</p>
+                                <% } %>
+                            </div>
+                        </div>
+                    <% }); %>
+                <% } %>
+            </div>
+        </section>
+
+        <section id="add-event-section" class="form-section admin-only">
+            <h2 class="section-title">Створити нову подію</h2>
+            <form action="/events/create" method="POST">
+                <div class="form-grid">
+                    <input type="text" name="title" placeholder="Назва події" required>
+                    <input type="datetime-local" name="date" required>
+                    <input type="number" name="duration" placeholder="Тривалість (хв)" required>
+                    <input type="number" name="total_seats" placeholder="Кількість місць" required>
+                </div>
+                <textarea name="description" placeholder="Опис події" rows="3"></textarea>
+                <button type="submit" class="btn-primary">+ Опублікувати захід</button>
+            </form>
+        </section>
+    </div>
+
+    <script>
+        const btn = document.getElementById('admin-toggle-btn');
+        
+        // Перевіряємо, чи був адмін-режим активний до перезавантаження
+        if (localStorage.getItem('adminMode') === 'active') {
+            document.body.classList.remove('client-mode');
+            document.body.classList.add('admin-mode');
+            btn.textContent = '🔒 Вийти з адміна';
+            btn.classList.add('active-admin');
+        }
+
+        btn.addEventListener('click', () => {
+            if (document.body.classList.contains('client-mode')) {
+                // Активуємо режим адміна
+                document.body.classList.remove('client-mode');
+                document.body.classList.add('admin-mode');
+                btn.textContent = '🔒 Вийти з адміна';
+                btn.classList.add('active-admin');
+                localStorage.setItem('adminMode', 'active'); // Запам'ятовуємо вибір
+            } else {
+                // Активуємо режим клієнта
+                document.body.classList.remove('admin-mode');
+                document.body.classList.add('client-mode');
+                btn.textContent = '🔧 Увійти як адмін';
+                btn.classList.remove('active-admin');
+                localStorage.setItem('adminMode', 'inactive');
+            }
+        });
+    </script>
+</body>
+</html>
